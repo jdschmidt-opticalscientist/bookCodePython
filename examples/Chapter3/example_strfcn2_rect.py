@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-# from wave_prop import rect, tri, str_fcn2_ft
+from OpticalWavePropSim import rect, tri, str_fcn2_ft
 
 # example_strfcn2_rect.m
 N = 256         # number of samples
@@ -27,14 +27,33 @@ C = D_samp / delta**2
 C_cont = 2 * (w**2) * (1 - tri(x / w) * tri(y / w))
 
 # Visualization
-plt.figure(figsize=(10, 5))
-plt.subplot(121)
-plt.imshow(C, extent=[-L/2, L/2, -L/2, L/2])
-plt.title("Numerical Structure Function")
-plt.colorbar()
-
-plt.subplot(122)
+plt.figure(figsize=(10, 4))
+plt.subplot(2, 2, 1)
 plt.imshow(C_cont, extent=[-L/2, L/2, -L/2, L/2])
-plt.title("Analytic Structure Function")
-plt.colorbar()
+plt.xlabel('$x [m]$')
+plt.ylabel('$y [m]$')
+plt.title('Analytic')
+
+plt.subplot(2, 2, 2)
+plt.imshow(np.real(C), extent=[-L/2, L/2, -L/2, L/2])
+plt.xlabel('$x [m]$')
+plt.ylabel('$y [m]$')
+plt.title('Numerical')
+
+# Bottom: y=0 Slice Comparison
+plt.subplot(2, 1, 2)
+# Extract the slice where y = 0
+slice_num = np.real(C[int(N/2)+1, :])
+slice_ana = C_cont[int(N/2)+1, :]
+
+plt.plot(x_vec, slice_ana, 'rs-', label='Analytic', lw=2)
+plt.plot(x_vec, slice_num, 'bx', label='Numerical')
+
+plt.title(r'Cross-section comparison at $y=0$')
+plt.xlabel(r'$x$ [m]')
+plt.ylabel(r'Amplitude')
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
 plt.show()

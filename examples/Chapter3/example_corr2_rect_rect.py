@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-# from wave_prop import rect, tri, corr2_ft
+from OpticalWavePropSim import rect, tri, corr2_ft
 
 # example_corr2_rect_rect.m
 N = 256         # number of samples
@@ -24,13 +24,32 @@ C_cont = (w**2) * tri(x / w) * tri(y / w)
 
 # Visualization
 plt.figure(figsize=(10, 4))
-plt.subplot(121)
-plt.imshow(np.real(C), extent=[-L/2, L/2, -L/2, L/2])
-plt.title('Discrete 2D Correlation')
-plt.colorbar()
-
-plt.subplot(122)
+plt.subplot(2, 2, 1)
 plt.imshow(C_cont, extent=[-L/2, L/2, -L/2, L/2])
-plt.title('Analytic Solution')
-plt.colorbar()
+plt.xlabel('$x [m]$')
+plt.ylabel('$y [m]$')
+plt.title('Analytic')
+
+plt.subplot(2, 2, 2)
+plt.imshow(np.real(C), extent=[-L/2, L/2, -L/2, L/2])
+plt.xlabel('$x [m]$')
+plt.ylabel('$y [m]$')
+plt.title('Numerical')
+
+# Bottom: y=0 Slice Comparison
+plt.subplot(2, 1, 2)
+# Extract the slice where y = 0
+slice_num = np.real(C[int(N/2)+1, :])
+slice_ana = C_cont[int(N/2)+1, :]
+
+plt.plot(x_vec, slice_ana, 'rs-', label='Analytic', lw=2)
+plt.plot(x_vec, slice_num, 'bx', label='Numerical')
+
+plt.title(r'Cross-section comparison at $y=0$')
+plt.xlabel(r'$x$ [m]')
+plt.ylabel(r'Amplitude')
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
 plt.show()
