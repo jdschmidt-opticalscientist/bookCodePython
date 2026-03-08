@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from OpticalWavePropSim import ang_spec_prop
 
-# example_pt_source.m
+# example_pt_source.py
 D = 8e-3            # diameter of observation aperture [m]
 wvl = 1e-6          # wavelength [m]
 k = 2 * np.pi / wvl # optical wavenumber [rad/m]
