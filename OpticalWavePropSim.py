@@ -5,6 +5,7 @@
 # Licensed under the BSD 3-Clause License. 
 # See LICENSE file in the project root for full license information.
 
+import math
 import numpy as np
 from scipy.special import j1
 from scipy.special import fresnel # Returns (S, C)
@@ -42,6 +43,14 @@ def tri(t):
     idx = t < 1.0
     y[idx] = 1.0 - t[idx]
     return y
+
+def circ(x, y, D=1.0):
+    """function z = circ(x, y, D)"""
+    r = np.sqrt(x**2 + y**2)
+    z = (r < D/2).astype(float)
+    # Handle the boundary r = D/2
+    z[r == D/2] = 0.5
+    return z
 
 def jinc(x):
     """Jinc function: 2*J1(pi*x) / (pi*x)"""
@@ -147,6 +156,36 @@ def ang_spec_prop(Uin, wvl, d1, d2, Dz):
     Uout = Q3 * ift2(Q2 * ft2(Q1 * Uin / m, d1), df1)
     return nx * d2, ny * d2, Uout
     
+def ang_spec_propABCD(Uin, wvl, d1, d2, ABCD):
+    # function [x2 y2 Uout] ...
+    #     = ang_spec_propABCD(Uin, wwl, d1, d2, ABCD)
+    N = Uin.shape[0]   # assume square grid
+    # source-plane coordinates
+    vec1 = np.arange(-N/2, N/2) * d1
+    x1, y1 = np.meshgrid(vec1, vec1)
+    r1sq = x1**2 + y1**2
+    # spatial frequencies (of source plane)
+    df1 = 1 / (N*d1)
+    vecf = np.arange(-N/2, N/2) * df1
+    fX, fY = np.meshgrid(vecf, vecf)
+    fsq = fX**2 + fY**2
+    # scaling parameter
+    m = d2/d1
+    # observation-plane coordinates
+    vec2 = np.arange(-N/2, N/2) * d2
+    x2, y2 = np.meshgrid(vec2, vec2)
+    r2sq = x2**2 + y2**2
+    # optical system matrix
+    A = ABCD[0,0]; B = ABCD[0,1]; D = ABCD[1,1]
+    # quadratic phase factors
+    Q1 = np.exp(1j*np.pi/(wvl*B)*(A-m)*r1sq)
+    Q2 = np.exp(-1j*np.pi*wvl*B/m*fsq)
+    Q3 = np.exp(1j*np.pi/(wvl*B)*(D-1/m)*r2sq)
+    # compute the propagated field
+    Uout = Q3 * ift2(Q2 * ft2(Q1 * Uin / m, d1), df1)
+    
+    return x2, y2, Uout
+
 def corr2_ft(u1, u2, mask, delta):
     """2D Correlation using FFT with mask normalization"""
     N = u1.shape[0]
@@ -382,24 +421,49 @@ def two_step_prop(Uin, wvl, d1, d2, Dz):
     return x2, y2, Uout
 
 def _zrf(n, m, r):
-    """Zernike radial function."""
-    R = np.zeros_like(r)
+    R = np.zeros_like(r, dtype=float)
+    # n-m must be even and non-negative
+    if (n - m) % 2 != 0 or n < m:
+        return R
+    
     for s in range(int((n - m) / 2) + 1):
         num = (-1)**s * gamma(n - s + 1)
         denom = (gamma(s + 1) * gamma((n + m) / 2 - s + 1) * gamma((n - m) / 2 - s + 1))
         R += num / denom * r**(n - 2 * s)
     return R
 
-def zernike(i, r, theta, index_map):
-    """
-    Zernike polynomial. 
-    index_map should be an array/dictionary mapping i to (n, m).
-    """
-    n, m = index_map[i]
-    if m == 0:
-        return np.sqrt(n + 1) * _zrf(n, 0, r)
+def noll_to_nm(j):
+    """Corrected Noll to (n, m) mapping."""
+    n = 0
+    j1 = j
+    while j1 > (n + 1):
+        j1 -= (n + 1)
+        n += 1
+    
+    # The number of modes up to radial degree n-1 is n(n+1)/2
+    # But Noll uses a specific pyramid. Let's use the explicit Noll formula:
+    n = int((np.sqrt(8 * j - 7) - 1) / 2)
+    m_abs = j - n * (n + 1) // 2 - 1
+    
+    # Correcting parity and m value
+    if n % 2 == 0:
+        m = 2 * int(m_abs / 2)
     else:
-        if i % 2 == 0: # Even
-            return np.sqrt(2 * (n + 1)) * _zrf(n, m, r) * np.cos(m * theta)
-        else: # Odd
-            return np.sqrt(2 * (n + 1)) * _zrf(n, m, r) * np.sin(m * theta)
+        m = 2 * int((m_abs + 1) / 2) - 1
+    
+    if j % 2 > 0:
+        m = -m
+    return n, m
+
+def zernike(j, r, theta):
+    n, m_val = noll_to_nm(j)
+    m = abs(m_val)
+    # Use a small epsilon for the boundary to avoid floating point clipping
+    r_safe = np.where(r <= 1.000001, r, 0.0)
+    
+    if m == 0:
+        return np.sqrt(n + 1) * _zrf(n, 0, r_safe)
+    elif j % 2 == 0:
+        return np.sqrt(2 * (n + 1)) * _zrf(n, m, r_safe) * np.cos(m * theta)
+    else:
+        return np.sqrt(2 * (n + 1)) * _zrf(n, m, r_safe) * np.sin(m * theta)

@@ -1,12 +1,12 @@
 import numpy as np
-# from wave_prop import circ, zernike
+from OpticalWavePropSim import circ, zernike
 
 # example_zernike_projection.m
-N = 32
-L = 2.0
-delta = L / N
+N = 32         # number of grid points per side
+L = 2.0        # total size of the grid [m]
+delta = L / N # grid spacing [m]
 
-# Coordinates
+# Cartesian & polar coordinates
 vec = np.arange(-N/2, N/2) * delta
 x, y = np.meshgrid(vec, vec)
 r = np.sqrt(x**2 + y**2)
@@ -19,16 +19,17 @@ ap = circ(x, y, 2)
 # Index 2: Tilt, 4: Defocus, 21: high order
 zern_map = {2: (1, 1), 4: (2, 0), 21: (5, 1)}
 
-# Generate modes
+# 3 Zernike modes
 z2 = zernike(2, r, theta, zern_map) * ap
 z4 = zernike(4, r, theta, zern_map) * ap
 z21 = zernike(21, r, theta, zern_map) * ap
 
-# Create the combined aberration
+# Create the aberration
 W_full = 0.5 * z2 + 0.25 * z4 - 0.6 * z21
 
-# Masking: Only use points inside the aperture
+# Find only grid points within the aperture
 idx = ap > 0
+# Perform linear indexing in column-major order
 W_vec = W_full[idx]
 
 # Construct the Matrix Z where each column is a Zernike mode

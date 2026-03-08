@@ -1,38 +1,55 @@
 import numpy as np
 import matplotlib.pyplot as plt
-# from wave_prop import rect, one_step_prop, fresnel_prop_square_ap
+from OpticalWavePropSim import rect, one_step_prop, fresnel_prop_square_ap
 
-# example_square_prop_one_step.m
-N = 1024
-L = 1e-2
-delta1 = L / N
-D = 2e-3
-wvl = 1e-6
+# example_square_prop_one_step.py
+N = 1024       # number of grid points per side
+L = 1e-2       # total size of the grid [m]
+delta1 = L / N # grid spacing [m]
+D = 2e-3 # diameter of the aperture [m]
+wvl = 1e-6 # optical wavelength [m]
 k = 2 * np.pi / wvl
-Dz = 1.0
+Dz = 1.0 # propagation distance [m]
 
-# Source plane coordinates
 vec1 = np.arange(-N/2, N/2) * delta1
 x1, y1 = np.meshgrid(vec1, vec1)
-
-# Square aperture
 ap = rect(x1 / D) * rect(y1 / D)
-
-# Numerical propagation using one-step method
 x2, y2, Uout = one_step_prop(ap, wvl, delta1, Dz)
 
 # Analytic result for y2=0 slice
-mid_idx = N // 2
-x2_slice = x2[mid_idx, :]
-Uout_an = fresnel_prop_square_ap(x2_slice, 0, D, wvl, Dz)
+x2_slice = x2[N // 2, :]
+x2_slice_mm = x2_slice * 1e3
+y2_val = 0
+Uout_an = fresnel_prop_square_ap(x2_slice, y2_val, D, wvl, Dz)
 
-# Visualization
-plt.figure(figsize=(10, 5))
-plt.plot(x2_slice, np.abs(Uout[mid_idx, :])**2, 'bo', label='One-Step (Numerical)')
-plt.plot(x2_slice, np.abs(Uout_an)**2, 'r-', label='Fresnel Integral (Analytic)')
-plt.title("One-Step Fresnel Propagation Comparison")
-plt.xlabel("Position [m]")
-plt.ylabel("Irradiance")
+# --- Visualization ---
+plt.figure(figsize=(12, 5))
+
+# Irradiance Plot
+plt.subplot(121)
+plt.plot(x2_slice_mm, np.abs(Uout_an)**2, 'rs-', label='Analytic')
+plt.plot(x2_slice_mm, np.abs(Uout[N // 2, :])**2, 'bx-', label='Numerical')
+plt.xlim(-5, 5)
+plt.title("Square Aperture Diffraction Irradiance\n($y=0$ slice at $z=1$m)")
+plt.xlabel("$x_2$ [mm]")
+plt.ylabel("Irradiance [W/m$^2$]")
 plt.legend()
 plt.grid(True)
+
+# Phase Plot
+plt.subplot(122)
+# Extracting phase from analytic and numerical results
+phase_an = np.angle(Uout_an)
+phase_num = np.angle(Uout[N // 2, :])
+
+plt.plot(x2_slice_mm, phase_an, 'rs-', label='Analytic')
+plt.plot(x2_slice_mm, phase_num, 'bx-', label='Numerical')
+plt.xlim(-5, 5)
+plt.title("Square Aperture Diffraction Phase\n($y=0$ slice at $z=1$m)")
+plt.xlabel("$x_2$ [mm]")
+plt.ylabel("Phase [rad]")
+plt.legend()
+plt.grid(True)
+
+plt.tight_layout()
 plt.show()

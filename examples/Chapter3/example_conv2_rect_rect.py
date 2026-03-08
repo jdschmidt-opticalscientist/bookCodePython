@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from OpticalWavePropSim import rect, tri, myconv2
 
-# example_conv2_rect_rect.m
+# example_conv2_rect_rect.py
 N = 256         # number of samples
 L = 16.0        # grid size [m]
 delta = L / N   # sample spacing [m]
