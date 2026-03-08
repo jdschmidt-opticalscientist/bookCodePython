@@ -111,33 +111,47 @@ def ang_spec_multi_prop(Uin, wvl, delta1, deltan, z, t):
 
 def ang_spec_multi_prop_vac(Uin, wvl, delta1, deltan, z):
     """Angular spectrum multi-plane propagation in vacuum (no screens)"""
-    # Identical to above but skipping 't' multiplications
-    N = Uin.shape[0]
+    N = Uin.shape[0] # number of grid points
     vec = np.arange(-N/2, N/2)
     nx, ny = np.meshgrid(vec, vec)
-    k = 2 * np.pi / wvl
+    k = 2 * np.pi / wvl # optical wavenumber
+    # super-Gaussian absorbing boundary
     nsq = nx**2 + ny**2
-    sg = np.exp(-nsq**8 / (0.47*N)**16)
+    w = 0.47*N
+    sg = np.exp(-nsq**8 / w**16)
     
-    z_arr = np.concatenate(([0], np.atleast_1d(z)))
-    Delta_z = np.diff(z_arr)
-    alpha = z_arr / z_arr[-1]
+    z = np.concatenate(([0], np.atleast_1d(z))) # propagation plane locations
+    # propagation distances
+    Delta_z = np.diff(z)
+    # grid spacings
+    alpha = z / z[-1]
     delta = (1 - alpha) * delta1 + alpha * deltan
     m = delta[1:] / delta[:-1]
+    x1 = nx * delta[0]
+    y1 = ny * delta[0]
+    r1sq = x1**2 + y1**2;
     
-    Uin = Uin * np.exp(1j * k / 2 * (1 - m[0]) / Delta_z[0] * (nx*delta[0])**2 + (ny*delta[0])**2)
+    Q1 = np.exp(1j*k/2*(1-m[0])/Delta_z[0]*r1sq)
+    Uin = Uin * Q1
     
-    dz = 0.0
-    for idx in range(len(z_arr) - 1):
-        df = 1 / (N * delta[idx])
-        fsq = (nx * df)**2 + (ny * df)**2
-        dz = Delta_z[idx]
-        Q2 = np.exp(-1j * np.pi**2 * 2 * dz / m[idx] / k * fsq)
-        Uin = sg * ift2(Q2 * ft2(Uin / m[idx], delta[idx]), df)
+    for idx in range(len(z) - 1):
+        # spatial frequencies (of i^th plane)
+        deltaf = 1 / (N * delta[idx])
+        fX = nx * deltaf
+        fY = ny * deltaf
+        fsq = fX**2 + fY**2
+        Z = Delta_z[idx] # propagation distance
+        # quadratic phase factor
+        Q2 = np.exp(-1j * np.pi**2 * 2 * Z / m[idx] / k * fsq)
+        # compute the propagated field
+        Uin = sg * ift2(Q2 * ft2(Uin / m[idx], delta[idx]), deltaf)
         
-    xn, yn = nx * delta[-1], ny * delta[-1]
-    Q3 = np.exp(1j * k / 2 * (m[-1] - 1) / (m[-1] * dz) * (xn**2 + yn**2))
-    return xn, yn, Q3 * Uin
+    # observation-plane coordinates
+    xn = nx * delta[-1]
+    yn = ny * delta[-1]
+    Q3 = np.exp(1j * k / 2 * (m[-1] - 1) / (m[-1] * Z) * (xn**2 + yn**2))
+    Uout = Q3 * Uin
+    return xn, yn, Uout
 
 def ang_spec_prop(Uin, wvl, d1, d2, Dz):
     """Single step angular spectrum propagation with scaling"""
