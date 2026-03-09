@@ -64,95 +64,6 @@ def myconv2(A, B, delta):
     N = A.shape[0]
     return ift2(ft2(A, delta) * ft2(B, delta), 1 / (N * delta))
 
-def ang_spec_multi_prop(Uin, wvl, delta1, deltan, z, t):
-    """Angular spectrum multi-plane propagation with transmission screens"""
-    N = Uin.shape[0]
-    vec = np.arange(-N/2, N/2)
-    nx, ny = np.meshgrid(vec, vec)
-    k = 2 * np.pi / wvl
-    
-    # Super-Gaussian absorbing boundary
-    nsq = nx**2 + ny**2
-    w = 0.47 * N
-    sg = np.exp(-nsq**8 / w**16)
-    
-    # Setup propagation planes
-    z_arr = np.concatenate(([0], np.atleast_1d(z)))
-    n = len(z_arr)
-    Delta_z = np.diff(z_arr)
-    
-    alpha = z_arr / z_arr[-1]
-    delta = (1 - alpha) * delta1 + alpha * deltan
-    m = delta[1:] / delta[:-1]
-    
-    # Initial phase and transmission
-    x1, y1 = nx * delta[0], ny * delta[0]
-    r1sq = x1**2 + y1**2
-    Q1 = np.exp(1j * k / 2 * (1 - m[0]) / Delta_z[0] * r1sq)
-    Uin = Uin * Q1 * t[:, :, 0]
-    
-    dz = 0.0 # Define in scope for final Q3
-    for idx in range(n - 1):
-        deltaf = 1 / (N * delta[idx])
-        fsq = (nx * deltaf)**2 + (ny * deltaf)**2
-        dz = Delta_z[idx]
-        
-        # Quadratic phase factor
-        Q2 = np.exp(-1j * np.pi**2 * 2 * dz / m[idx] / k * fsq)
-        # Propagate and apply next screen
-        Uin = sg * t[:, :, idx+1] * ift2(Q2 * ft2(Uin / m[idx], delta[idx]), deltaf)
-        
-    # Observation plane coordinates
-    xn, yn = nx * delta[-1], ny * delta[-1]
-    rnsq = xn**2 + yn**2
-    Q3 = np.exp(1j * k / 2 * (m[-1] - 1) / (m[-1] * dz) * rnsq)
-    Uout = Q3 * Uin
-    return xn, yn, Uout
-
-def ang_spec_multi_prop_vac(Uin, wvl, delta1, deltan, z):
-    """Angular spectrum multi-plane propagation in vacuum (no screens)"""
-    N = Uin.shape[0] # number of grid points
-    vec = np.arange(-N/2, N/2)
-    nx, ny = np.meshgrid(vec, vec)
-    k = 2 * np.pi / wvl # optical wavenumber
-    # super-Gaussian absorbing boundary
-    nsq = nx**2 + ny**2
-    w = 0.47*N
-    sg = np.exp(-nsq**8 / w**16)
-    
-    z = np.concatenate(([0], np.atleast_1d(z))) # propagation plane locations
-    # propagation distances
-    Delta_z = np.diff(z)
-    # grid spacings
-    alpha = z / z[-1]
-    delta = (1 - alpha) * delta1 + alpha * deltan
-    m = delta[1:] / delta[:-1]
-    x1 = nx * delta[0]
-    y1 = ny * delta[0]
-    r1sq = x1**2 + y1**2;
-    
-    Q1 = np.exp(1j*k/2*(1-m[0])/Delta_z[0]*r1sq)
-    Uin = Uin * Q1
-    
-    for idx in range(len(z) - 1):
-        # spatial frequencies (of i^th plane)
-        deltaf = 1 / (N * delta[idx])
-        fX = nx * deltaf
-        fY = ny * deltaf
-        fsq = fX**2 + fY**2
-        Z = Delta_z[idx] # propagation distance
-        # quadratic phase factor
-        Q2 = np.exp(-1j * np.pi**2 * 2 * Z / m[idx] / k * fsq)
-        # compute the propagated field
-        Uin = sg * ift2(Q2 * ft2(Uin / m[idx], delta[idx]), deltaf)
-        
-    # observation-plane coordinates
-    xn = nx * delta[-1]
-    yn = ny * delta[-1]
-    Q3 = np.exp(1j * k / 2 * (m[-1] - 1) / (m[-1] * Z) * (xn**2 + yn**2))
-    Uout = Q3 * Uin
-    return xn, yn, Uout
-
 def ang_spec_prop(Uin, wvl, d1, d2, Dz):
     """Single step angular spectrum propagation with scaling"""
     N = Uin.shape[0]
@@ -199,6 +110,96 @@ def ang_spec_propABCD(Uin, wvl, d1, d2, ABCD):
     Uout = Q3 * ift2(Q2 * ft2(Q1 * Uin / m, d1), df1)
     
     return x2, y2, Uout
+
+def ang_spec_multi_prop_vac(Uin, wvl, delta1, deltan, z):
+    """Angular spectrum multi-plane propagation in vacuum (no screens)"""
+    N = Uin.shape[0] # number of grid points
+    vec = np.arange(-N/2, N/2)
+    nx, ny = np.meshgrid(vec, vec)
+    k = 2 * np.pi / wvl # optical wavenumber
+    # super-Gaussian absorbing boundary
+    nsq = nx**2 + ny**2
+    w = 0.47*N
+    sg = np.exp(-nsq**8 / w**16)
+    
+    z = np.concatenate(([0], np.atleast_1d(z))) # propagation plane locations
+    # propagation distances
+    Delta_z = np.diff(z)
+    # grid spacings
+    alpha = z / z[-1]
+    delta = (1 - alpha) * delta1 + alpha * deltan
+    m = delta[1:] / delta[:-1]
+    x1 = nx * delta[0]
+    y1 = ny * delta[0]
+    r1sq = x1**2 + y1**2;
+    
+    Q1 = np.exp(1j*k/2*(1-m[0])/Delta_z[0]*r1sq)
+    Uin = Uin * Q1
+    
+    for idx in range(len(z) - 1):
+        # spatial frequencies (of i^th plane)
+        deltaf = 1 / (N * delta[idx])
+        fX = nx * deltaf
+        fY = ny * deltaf
+        fsq = fX**2 + fY**2
+        Z = Delta_z[idx] # propagation distance
+        # quadratic phase factor
+        Q2 = np.exp(-1j * np.pi**2 * 2 * Z / m[idx] / k * fsq)
+        # compute the propagated field
+        Uin = sg * ift2(Q2 * ft2(Uin / m[idx], delta[idx]), deltaf)
+        
+    # observation-plane coordinates
+    xn = nx * delta[-1]
+    yn = ny * delta[-1]
+    Q3 = np.exp(1j * k / 2 * (m[-1] - 1) / (m[-1] * Z) * (xn**2 + yn**2))
+    Uout = Q3 * Uin
+    return xn, yn, Uout
+
+def ang_spec_multi_prop(Uin, wvl, delta1, deltan, z, t):
+    """Angular spectrum multi-plane propagation with transmission screens"""
+    N = Uin.shape[0]
+    vec = np.arange(-N/2, N/2)
+    nx, ny = np.meshgrid(vec, vec)
+    k = 2 * np.pi / wvl
+    
+    # super-Gaussian absorbing boundary
+    nsq = nx**2 + ny**2
+    w = 0.47*N
+    sg = np.exp(-nsq**8 / w**16)
+    
+    z = np.concatenate(([0], np.atleast_1d(z))) # propagation plane locations
+    # propagation distances
+    Delta_z = np.diff(z)
+    
+    # grid spacings
+    alpha = z / z[-1]
+    delta = (1 - alpha) * delta1 + alpha * deltan
+    m = delta[1:] / delta[:-1]
+    x1 = nx * delta[0]
+    y1 = ny * delta[0]
+    r1sq = x1**2 + y1**2;
+    
+    Q1 = np.exp(1j*k/2*(1-m[0])/Delta_z[0]*r1sq)
+    Uin = Uin * Q1 * t[:, :, 0]
+    
+    for idx in range(len(z) - 1):
+        # spatial frequencies (of i^th plane)
+        deltaf = 1 / (N * delta[idx])
+        fX = nx * deltaf
+        fY = ny * deltaf
+        fsq = fX**2 + fY**2
+        Z = Delta_z[idx] # propagation distance
+        # quadratic phase factor
+        Q2 = np.exp(-1j * np.pi**2 * 2 * Z / m[idx] / k * fsq)
+        # Propagate and apply next screen
+        Uin = sg * t[:, :, idx+1] * ift2(Q2 * ft2(Uin / m[idx], delta[idx]), deltaf)
+        
+    # observation-plane coordinates
+    xn = nx * delta[-1]
+    yn = ny * delta[-1]
+    Q3 = np.exp(1j * k / 2 * (m[-1] - 1) / (m[-1] * Z) * (xn**2 + yn**2))
+    Uout = Q3 * Uin
+    return xn, yn, Uout
 
 def corr2_ft(u1, u2, mask, delta):
     """2D Correlation using FFT with mask normalization"""
