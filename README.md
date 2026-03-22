@@ -49,7 +49,6 @@ pip install numpy matplotlib scipy
 
 Clone the repository and add the root directory to your PYTHONPATH, or simply run the examples from the root:
 
-````
 # bookCodePython: Numerical Simulation of Optical Wave Propagation
 
 This repository provides the official Python implementation of the simulation framework from the textbook **"Numerical Simulation of Optical Wave Propagation with Examples in MATLAB"**.
@@ -122,4 +121,7 @@ Note: This license applies specifically to this Python translation. The original
 ![Python CI](https://github.com/jdschmidt-opticalscientist/bookcodePython/actions/workflows/main.yml/badge.svg?branch=main)
 
 We use GitHub Actions to ensure code quality through automated linting and unit testing.
-````
+
+```
+
+```
