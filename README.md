@@ -95,7 +95,7 @@ Ensure you have the core scientific stack installed:
 
 ```bash
 pip install numpy matplotlib scipy
-````
+```
 
 ### 2. Setup
 
@@ -122,3 +122,4 @@ Note: This license applies specifically to this Python translation. The original
 ![Python CI](https://github.com/jdschmidt-opticalscientist/bookcodePython/actions/workflows/main.yml/badge.svg?branch=main)
 
 We use GitHub Actions to ensure code quality through automated linting and unit testing.
+````
