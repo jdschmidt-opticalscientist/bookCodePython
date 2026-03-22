@@ -37,4 +37,4 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
         run: |
           # Run the ultimate test script
-          python examples/master_simulation.py
+          python examples/Chapter9/master_simulation.py
