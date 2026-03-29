@@ -470,8 +470,18 @@ def noll_to_nm(j):
         m = -m
     return n, m
 
-def zernike(j, r, theta):
-    n, m_val = noll_to_nm(j)
+def zernike(j, r, theta, z_map=None):
+    """
+    j: Zernike index
+    r, theta: radial and azimuthal coordinates
+    z_map: optional dictionary mapping j to (n, m)
+    """
+    # Use mapping if provided, otherwise default to Noll
+    if z_map is not None and j in z_map:
+        n, m_val = z_map[j]
+    else:
+        n, m_val = noll_to_nm(j)
+        
     m = abs(m_val)
     # Use a small epsilon for the boundary to avoid floating point clipping
     r_safe = np.where(r <= 1.000001, r, 0.0)
