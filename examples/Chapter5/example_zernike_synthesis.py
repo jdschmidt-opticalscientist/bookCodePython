@@ -5,7 +5,7 @@ from OpticalWavePropSim import circ, ft_phase_screen, zernike
 N = 40        # number of grid points per side
 L = 2         # total size of the grid [m]
 delta = L / N # grid spacing [m]
-# Cartesian & polar coordinates
+# cartesian & polar coordinates
 x_vec = np.arange(-N/2, N/2) * delta
 x, y = np.meshgrid(x_vec, x_vec)
 r = np.sqrt(x**2 + y**2)
@@ -24,7 +24,7 @@ nModes = 100 # number of Zernike modes
 # create matrix of Zernike polynomial values
 Z = np.zeros((W.size, nModes))
 for idx in range(1, nModes + 1):
-    temp = zernike(idx, r, theta) # Ensure this handles Noll 1-based indexing
+    temp = zernike(idx, r, theta)
     Z[:, idx-1] = temp[idxAp]
 # compute mode coefficients
 A, _, _, _ = np.linalg.lstsq(Z, W, rcond=None)
@@ -34,7 +34,7 @@ W_prime = Z @ A
 scr = np.zeros((N, N))
 scr[idxAp] = W_prime
 
-# Visualization
+# plots
 c_min = np.min(W)
 c_max = np.max(W)
 
@@ -63,6 +63,8 @@ for i, n in enumerate(mode_list):
     im = ax.imshow(scr, extent=[-L/2, L/2, -L/2, L/2], 
                    cmap='jet', vmin=c_min, vmax=c_max)
     ax.set_title(f"Modes 1 to {n}")
+    ax.set_xlabel("x [m]")
+    ax.set_ylabel("y [m]")
     plt.colorbar(im, ax=ax)
 
 plt.tight_layout()
