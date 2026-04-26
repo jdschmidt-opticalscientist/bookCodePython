@@ -33,10 +33,11 @@ To assist readers in connecting the book material with the Python implementation
 ```text
 bookCodePython/
 ├── examples/           # Textbook example scripts organized by chapter
-├── src/                # Core propagation source code
 ├── requirements.txt    # Optional: Python dependencies
 ├── LICENSE
-└── README.md
+├── OpticalWavePropSim.py
+├── README.md
+└── requirements.txt
 ```
 
 ---
