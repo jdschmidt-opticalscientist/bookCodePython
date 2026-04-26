@@ -55,6 +55,7 @@ python examples/Chapter9/pt_source_atmos_setup.py
 ```
 
 ##⚖️ License
+
 The Python source code in this repository is licensed under the BSD 3-Clause License. See the LICENSE file for full details.
 
 Note: This license applies specifically to this Python translation. The original MATLAB code and textbook content remain under the copyright of SPIE.
