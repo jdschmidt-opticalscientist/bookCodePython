@@ -26,6 +26,18 @@ To assist readers in connecting the book material with the Python implementation
 
 **Enhancement:** Unlike the original code provided on the disc with the book, this Python version includes integrated plotting routines to visualize key outputs immediately.
 
+---
+
+## 📂 Project Structure
+
+```text
+bookCodePython/
+├── examples/           # Textbook example scripts organized by chapter
+├── src/                # Core propagation source code
+├── requirements.txt    # Optional: Python dependencies
+├── LICENSE
+└── README.md
+```
 
 ---
 
@@ -43,14 +55,14 @@ pip install numpy matplotlib scipy
 
 Clone the repository and add the root directory to your PYTHONPATH, or simply run the examples from the root:
 
-```
+```bash
 git clone https://github.com/jdschmidt-opticalscientist/bookCodePython.git
 cd bookCodePython
 ```
 
 ### 3. Run an Example
 
-```
+```bash
 python examples/Chapter9/pt_source_atmos_setup.py
 ```
 
@@ -64,6 +76,6 @@ Note: This license applies specifically to this Python translation. The original
 
 ## Development Quality
 
-![Python CI](https://github.com/jdschmidt-opticalscientist/bookcodePython/actions/workflows/main.yml/badge.svg?branch=main)
+![Python CI](https://github.com/jdschmidt-opticalscientist/bookCodePython/actions/workflows/main.yml/badge.svg?branch=main)
 
 We use GitHub Actions to ensure code quality through automated linting and unit testing.
