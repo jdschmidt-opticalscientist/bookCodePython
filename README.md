@@ -54,6 +54,8 @@ cd bookCodePython
 python examples/Chapter9/pt_source_atmos_setup.py
 ```
 
+---
+
 ##⚖️ License
 
 The Python source code in this repository is licensed under the BSD 3-Clause License. See the LICENSE file for full details.

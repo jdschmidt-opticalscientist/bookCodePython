@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the book as follows."
+authors:
+- family-names: "Schmidt"
+  given-names: "Jason D."
+title: "Numerical Simulation of Optical Wave Propagation with Examples in MATLAB"
+year: 2010
+publisher: "SPIE"
+url: "https://schmidtwaveopticsbook.org/"
+doi: "10.1117/3.866274"
