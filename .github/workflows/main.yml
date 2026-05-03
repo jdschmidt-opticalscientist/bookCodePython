@@ -7,34 +7,39 @@ on:
     branches: ["main"]
 
 jobs:
-  build-and-test:
+  lint:
+    name: Style Suggestions
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - name: Install Ruff
+        run: pip install ruff
 
+      - name: Critical Logic Check
+        # Fails only on broken code (F=Logic errors, E9=Syntax)
+        run: ruff check . --select=F,E9
+
+      - name: Pythonic Advice
+        # Runs the full linter for your review, but never fails the build
+        continue-on-error: true
+        run: ruff check .
+
+  build-and-test:
+    name: Physics Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-
+          cache: "pip"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Lint with flake8 (Syntax Check)
-        run: |
-          # This checks for "Fatal" errors like undefined variables or syntax errors
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-
-      - name: Run Master Simulation Smoke Test
+      - name: Run Master Simulation
         env:
-          # 1. Force Matplotlib to use a non-interactive backend
           MPLBACKEND: Agg
-          # 2. Add the current directory to the Python Path
           PYTHONPATH: ${{ github.workspace }}
-        run: |
-          # Run the ultimate test script
-          python examples/Chapter9/master_simulation.py
+        run: python examples/Chapter9/master_simulation.py
