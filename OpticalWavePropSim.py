@@ -100,7 +100,9 @@ def ang_spec_propABCD(Uin, wvl, d1, d2, ABCD):
     x2, y2 = np.meshgrid(vec2, vec2)
     r2sq = x2**2 + y2**2
     # optical system matrix
-    A = ABCD[0,0]; B = ABCD[0,1]; D = ABCD[1,1]
+    A = ABCD[0,0]
+    B = ABCD[0,1]
+    D = ABCD[1,1]
     # quadratic phase factors
     Q1 = np.exp(1j*np.pi/(wvl*B)*(A-m)*r1sq)
     Q2 = np.exp(-1j*np.pi*wvl*B/m*fsq)
@@ -130,7 +132,7 @@ def ang_spec_multi_prop_vac(Uin, wvl, delta1, deltan, z):
     m = delta[1:] / delta[:-1]
     x1 = nx * delta[0]
     y1 = ny * delta[0]
-    r1sq = x1**2 + y1**2;
+    r1sq = x1**2 + y1**2
     
     Q1 = np.exp(1j*k/2*(1-m[0])/Delta_z[0]*r1sq)
     Uin = Uin * Q1
@@ -176,7 +178,7 @@ def ang_spec_multi_prop(Uin, wvl, delta1, deltan, z, t):
     m = delta[1:] / delta[:-1]
     x1 = nx * delta[0]
     y1 = ny * delta[0]
-    r1sq = x1**2 + y1**2;
+    r1sq = x1**2 + y1**2
     
     Q1 = np.exp(1j*k/2*(1-m[0])/Delta_z[0]*r1sq)
     Uin = Uin * Q1 * t[:, :, 0]

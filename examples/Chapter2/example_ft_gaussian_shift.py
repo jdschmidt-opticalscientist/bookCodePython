@@ -18,7 +18,7 @@ g_dft = ft(g_samp, delta)
 M = 1024
 x_cont = np.linspace(x[0], x[-1], M)
 f_cont = np.linspace(f[0], f[-1], M)
-g_cont = np.exp(-np.pi*a*(x_cont-x0)**2);
+g_cont = np.exp(-np.pi*a*(x_cont-x0)**2)
 g_ft_cont = np.exp(-1j * 2 * np.pi * x0 * f_cont) * np.exp(-np.pi * f_cont**2 / a) / a
 
 # --- Plotting ---

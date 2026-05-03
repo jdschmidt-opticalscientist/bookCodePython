@@ -59,7 +59,7 @@ def setup_atmosphere(D2, wvl, Dz):
     print("-" * 23)
     
     # check resulting r0sw & rytov
-    bp = A @ X;
+    bp = A @ X
 
     sim_r0 = bp[0]**(-3/5)
     # Calculate Rytov number
