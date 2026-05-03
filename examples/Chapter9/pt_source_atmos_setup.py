@@ -13,7 +13,7 @@ def setup_atmosphere(D2, wvl, Dz):
     Cn2 = 1e-16  # structure parameter [m^-2/3], constant
     # SW and PW coherence diameters [m]
     r0sw = (0.423 * k**2 * Cn2 * (3/8) * Dz)**(-3/5)
-    r0pw = (0.423 * k**2 * Cn2 * Dz)**(-3/5)
+    r0pw = (0.423 * k**2 * Cn2 * Dz)**(-3/5)  # noqa: F841
     # log-amplitude variance
     p = np.linspace(0, Dz, 1000)
     dp = p[1] - p[0]

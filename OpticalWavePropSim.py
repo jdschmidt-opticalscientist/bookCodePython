@@ -5,7 +5,6 @@
 # Licensed under the BSD 3-Clause License. 
 # See LICENSE file in the project root for full license information.
 
-import math
 import numpy as np
 from scipy.special import j1
 from scipy.special import fresnel # Returns (S, C)
