@@ -45,10 +45,16 @@ jobs:
         run: python examples/Chapter9/master_simulation.py
 
       - name: Fetch private tests
-        if: ${{ secrets.TEST_REPO != '' && secrets.TEST_REPO_PAT != '' }}
+        env:
+          TEST_REPO: ${{ secrets.TEST_REPO }}
+          TEST_REPO_PAT: ${{ secrets.TEST_REPO_PAT }}
         run: |
           git config --global --add safe.directory ${{ github.workspace }}
-          git clone https://${{ secrets.TEST_REPO_PAT }}@github.com/${{ secrets.TEST_REPO }} tests_private --depth=1 || echo "Private test clone failed"
+          if [ -n "$TEST_REPO" -a -n "$TEST_REPO_PAT" ]; then
+            git clone https://$TEST_REPO_PAT@github.com/$TEST_REPO tests_private --depth=1 || echo "Private test clone failed"
+          else
+            echo "TEST_REPO or TEST_REPO_PAT not set; skipping private tests"
+          fi
 
       - name: Install test tooling
         run: |
