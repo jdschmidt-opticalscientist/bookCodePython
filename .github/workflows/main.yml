@@ -65,12 +65,16 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
+          ARGS=""
           if [ -d tests_private ]; then
-            echo "Running public and private tests"
-            pytest -q tests tests_private
-          elif [ -d tests ]; then
-            echo "Running public tests"
-            pytest -q tests
+            ARGS="$ARGS tests_private"
+          fi
+          if [ -d tests ]; then
+            ARGS="$ARGS tests"
+          fi
+          if [ -n "$ARGS" ]; then
+            echo "Running pytest on:$ARGS"
+            pytest -q $ARGS
           else
             echo "No tests found; skipping pytest"
           fi
