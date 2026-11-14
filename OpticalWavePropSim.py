@@ -449,26 +449,20 @@ def _zrf(n, m, r):
     return R
 
 def noll_to_nm(j):
-    """Corrected Noll to (n, m) mapping."""
-    n = 0
-    j1 = j
-    while j1 > (n + 1):
-        j1 -= (n + 1)
-        n += 1
-    
-    # The number of modes up to radial degree n-1 is n(n+1)/2
-    # But Noll uses a specific pyramid. Let's use the explicit Noll formula:
+    """Map a Noll index to the corresponding (n, m) Zernike mode."""
+    j = int(j)
+    if j < 1:
+        raise ValueError("Noll index j must be a positive integer.")
+
+    # Noll ordering groups modes by radial degree n and orders |m| within
+    # each row as 0, 2, 2, 4, 4, ... for even n and 1, 1, 3, 3, ... for odd n.
     n = int((np.sqrt(8 * j - 7) - 1) / 2)
-    m_abs = j - n * (n + 1) // 2 - 1
-    
-    # Correcting parity and m value
+    p = j - n * (n + 1) // 2
     if n % 2 == 0:
-        m = 2 * int(m_abs / 2)
+        m_abs = 2 * (p // 2)
     else:
-        m = 2 * int((m_abs + 1) / 2) - 1
-    
-    if j % 2 > 0:
-        m = -m
+        m_abs = 2 * ((p - 1) // 2) + 1
+    m = -m_abs if j % 2 else m_abs
     return n, m
 
 def zernike(j, r, theta, z_map=None):
