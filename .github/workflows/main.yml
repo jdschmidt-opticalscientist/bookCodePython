@@ -43,3 +43,38 @@ jobs:
           MPLBACKEND: Agg
           PYTHONPATH: ${{ github.workspace }}
         run: python examples/Chapter9/master_simulation.py
+
+      - name: Fetch private tests
+        env:
+          TEST_REPO: ${{ secrets.TEST_REPO }}
+          TEST_REPO_PAT: ${{ secrets.TEST_REPO_PAT }}
+        run: |
+          git config --global --add safe.directory ${{ github.workspace }}
+          if [ -n "$TEST_REPO" -a -n "$TEST_REPO_PAT" ]; then
+            git clone https://$TEST_REPO_PAT@github.com/$TEST_REPO tests_private --depth=1 || echo "Private test clone failed"
+          else
+            echo "TEST_REPO or TEST_REPO_PAT not set; skipping private tests"
+          fi
+
+      - name: Install test tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Run tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          ARGS=""
+          if [ -d tests_private ]; then
+            ARGS="$ARGS tests_private"
+          fi
+          if [ -d tests ]; then
+            ARGS="$ARGS tests"
+          fi
+          if [ -n "$ARGS" ]; then
+            echo "Running pytest on:$ARGS"
+            pytest -q $ARGS
+          else
+            echo "No tests found; skipping pytest"
+          fi
